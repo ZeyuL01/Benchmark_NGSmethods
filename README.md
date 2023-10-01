@@ -15,6 +15,8 @@ Clean_Results.zip - results integrated into one table per method.
 Command and scripts run on Ubuntu 22.04, SMU M3 high-performance computing (HPC) cluster.
 
 #### Command:
+Please make sure the requirements are satisfied before running the command/scripts.
+
 ```
 $INPUT_PATH = "/path/to/input/destination/geneset.txt"
 $OUTPUT_PATH = "/path/to/output/destination/geneset.txt"
@@ -30,4 +32,6 @@ lisa oneshot hg38 $INPUT_PATH --save_metadata > $OUTPUT_PATH
 ```
 
 #### Scripts
-Please refer to files in /Scripts/
+For the rest of the methods, please refer to files in /Scripts/
+
+
