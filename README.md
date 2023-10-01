@@ -17,9 +17,10 @@ knockTF.zip - knockTF TF perturbation experiment derived genes, including the or
 ### Command and scripts
 Command and scripts run on Ubuntu 22.04, SMU M3 high-performance computing (HPC) cluster.
 
-#### Command
+#### Command:
+```
 $FILE_PATH = "/path/to/destination/geneset.txt"
 $OUTPUT_PATH = "/path/to/output/destination/geneset.txt"
 
 BART: bart2 geneset -i $FILE_PATH -s hg38 --outdir $OUTPUT_PATH
-
+```
