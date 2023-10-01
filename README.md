@@ -19,9 +19,18 @@ Command and scripts run on Ubuntu 22.04, SMU M3 high-performance computing (HPC)
 
 #### Command:
 ```
-$FILE_PATH = "/path/to/destination/geneset.txt"
+$INPUT_PATH = "/path/to/input/destination/geneset.txt"
 $OUTPUT_PATH = "/path/to/output/destination/geneset.txt"
 
 #BART:
-bart2 geneset -i $FILE_PATH -s hg38 --outdir $OUTPUT_PATH
+bart2 geneset -i $INPUT_PATH -s hg38 --outdir $OUTPUT_PATH
+
+#HOMER:
+findMotifs.pl $INPUT_PATH human $OUTPUT_PATH
+
+#Lisa:
+lisa oneshot hg38 $INPUT_PATH --save_metadata > $OUTPUT_PATH
 ```
+
+#### Scripts
+Please refer to files in /Scripts/
