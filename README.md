@@ -22,5 +22,6 @@ Command and scripts run on Ubuntu 22.04, SMU M3 high-performance computing (HPC)
 $FILE_PATH = "/path/to/destination/geneset.txt"
 $OUTPUT_PATH = "/path/to/output/destination/geneset.txt"
 
-BART: bart2 geneset -i $FILE_PATH -s hg38 --outdir $OUTPUT_PATH
+#BART:
+bart2 geneset -i $FILE_PATH -s hg38 --outdir $OUTPUT_PATH
 ```
