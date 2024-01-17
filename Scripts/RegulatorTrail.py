@@ -11,7 +11,7 @@ files=os.listdir(path)
 path_test=path+files[1]
 export_path='path/to/output/directory'
 
-for i in range(len(files))[340:]:
+for i in range(len(files))[1:]:
 	file_path=path+files[i]
 	key=getSession()
 	time.sleep(3)
