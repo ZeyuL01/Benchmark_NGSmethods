@@ -1,4 +1,4 @@
-## Assessing computational methods for predicting master transcriptional regulators of a co-regulated gene set
+## Assessing NGS-based computational methods for predicting master transcriptional regulators of a co-regulated gene set
 All files can be accessed from box
 
 Link to box: https://smu.box.com/s/hlofza4oe08ob4bb4i02nu3wl2zy39zj
