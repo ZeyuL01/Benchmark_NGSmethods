@@ -21,9 +21,9 @@ knockTF_folder<-c("knockTF_200/","knockTF_600/","knockTF_1000/")
 ############################################################
 
 MRR_cal<-function(li,K,term){
-  value=which(li[1:K]==term)
+  values=which(li[1:K]==term)
   if(length(values)>=1){
-    return(1/value[1])
+    return(1/values[1])
   }else if(length(values)==0){
     return(0)
   }
@@ -101,14 +101,14 @@ NDCG_table_1000$Method<-Method_names
 ############################################################
 work_dir<-"/Users/zeyulu/Dropbox/datasets/clean_results_new/"
 knockTF_folder<-c("knockTF_200/","knockTF_600/","knockTF_1000/")
-work_files<-list.files(paste0(work_dir,knockTF_folder[3]))
+work_files<-list.files(paste0(work_dir,knockTF_folder[1]))
 Method_names<-c("BART","ChEA3","ChIP-Atlas","Cscan","Enrichr","HOMER","i-cisTarget","Lisa","MAGIC","Pscan","RcisTarget","RegulatorTrail","TFEA.ChIP")
 
 work_files
 Top<-c(10,50,100)
 for(k in 1:3){
   for(i in 1:length(work_files)){
-    table<-read.csv(paste0(work_dir,knockTF_folder[3],work_files[i]))
+    table<-read.csv(paste0(work_dir,knockTF_folder[1],work_files[i]))
     TF_names<-sapply(strsplit(colnames(table),"_",fixed=TRUE),function(x){return(x[[1]])})
     AP_list<-c()
     NDCG_list<-c()
@@ -121,10 +121,10 @@ for(k in 1:3){
       NDCG_list<-c(NDCG_list,NDCG_cal(table[,j],Top[k],TF_names[j]))
       Hit_list<-c(Hit_list,Hit_cal(table[,j],Top[k],TF_names[j]))
     }
-    Hit_rate_table_1000[i,k+1]<-sum(Hit_list)/length(Hit_list)
-    NDCG_table_1000[i,k+1]<-mean(NDCG_list)
-    MAP_table_1000[i,k+1]<-mean(AP_list)
-    MRR_table_1000[i,k+1]<-sum(MRR_list,na.rm=TRUE)/length(MRR_list)
+    Hit_rate_table_200[i,k+1]<-sum(Hit_list)/length(Hit_list)
+    NDCG_table_200[i,k+1]<-mean(NDCG_list)
+    MAP_table_200[i,k+1]<-mean(AP_list)
+    MRR_table_200[i,k+1]<-sum(MRR_list,na.rm=TRUE)/length(MRR_list)
   }
 }
 
@@ -132,9 +132,9 @@ for(k in 1:3){
 #Figure 6 bottomleft
 ############################################################
 #par(mfrow=c(3,3),oma = c(2,2,2,0) + 0.1,mar = c(0.5,1,1,1) + 0.1,xpd=TRUE)
-pdf("/Users/zeyulu/Desktop/Review_Manuscript/version v6/figures/FIgure 5.pdf",width=7.98,height=8.29)
+pdf("/Users/zeyulu/Desktop/Review_Manuscript/BiB/Figures/FIgure 5_bottom_left.pdf",width=8.9,height=8.29)
 layout_matrix<-matrix(c(1:2),2,1,byrow=FALSE)
-par(mfcol=c(2,1),oma = c(3,3,2,0) + 0.1,mar = c(5,4,4,4) + 0.1,xpd=TRUE,bty="o")
+par(mfcol=c(2,1),oma = c(3,3,2,0) + 0.1,mgp=c(3,0.5,0),mar = c(5,4,4,4) + 0.1,xpd=TRUE,bty="o")
 layout(layout_matrix,heights=c(1,1.32),widths=c(1))
 
 for(k in 1:1){
@@ -169,13 +169,13 @@ for(k in 1:1){
       rank_list<-c(rank_list,which(TF_rank_list==TF_names[j])[1])
       ratio_list<-rank_list/rank_num
     }
-    top1p<-sum(ratio_list<0.01,na.rm=TRUE)
-    top5p<-sum(ratio_list<0.05,na.rm=TRUE)
-    top10p<-sum(ratio_list<0.1,na.rm=TRUE)
+    top1p<-sum(ratio_list<=0.01,na.rm=TRUE)
+    top5p<-sum(ratio_list<=0.05,na.rm=TRUE)
+    top10p<-sum(ratio_list<=0.1,na.rm=TRUE)
 
-    top10<-sum(rank_list<10,na.rm=TRUE)
-    top50<-sum(rank_list<50,na.rm=TRUE)
-    top100<-sum(rank_list<100,na.rm=TRUE)
+    top10<-sum(rank_list<=10,na.rm=TRUE)
+    top50<-sum(rank_list<=50,na.rm=TRUE)
+    top100<-sum(rank_list<=100,na.rm=TRUE)
 
     na_val<-sum(is.na(rank_list))
 
@@ -192,12 +192,12 @@ for(k in 1:1){
   if(k==1){
     abs_table_200=abs_table
   }
-  col_index_1<-c("BART","Lisa","ChIP-Atlas","MAGIC","TFEA.ChIP","RcisTarget","Enrichr","i-cisTarget","HOMER","Cscan","RegulatorTrail",
+  col_index_1<-c("BART","Lisa","ChIP-Atlas","MAGIC","TFEA.ChIP","Enrichr","RcisTarget","i-cisTarget","HOMER","Cscan","RegulatorTrail",
                  "ChEA3","Pscan")
 
   abs_table<-abs_table[col_index_1,]
 
-  col_abs<-c("black","black","black","black","black","red","black","black",
+  col_abs<-c("black","black","black","black","black","black","red","black",
              "red","black","black","black","red")
 
   ratio_table<-ratio_table[col_index_1,]
@@ -208,16 +208,17 @@ for(k in 1:1){
   if(k==1){
     par(mar=c(0.5,2.6,1,1)+0.1)
     b<-barplot(abs_table[,"TOP.100"],col="#FFDF34",ylim=c(0,140),xaxt = "n", yaxt = "n",cex.main=1.2,tcl=-0.2)
-    complement<-c(0,0,0,0,0,0,0,8,0,0,0,0,0)
+    complement<-c(0,0,0,0,0,0,0,9,0,0,0,0,0)
     axis(2,at=c(0,30,60,90,120),labels=c(0,30,60,90,120),cex.axis=1.3,tcl=-0.2)
     text(b,abs_table[,"TOP.100"]+3+complement,abs_table[,"TOP.100"],cex=0.8,font=2)
     par(new=T)
     barplot(abs_table[,"TOP.50"],col="#FC8C5A",ylim=c(0,140),xaxt = "n", yaxt = "n",tcl=-0.2,cex.axis=1.3)
-    complement<-c(0,0,0,0,0,0,0,-3,0,0,0,0,0)
+    complement<-c(0,0,0,0,0,0,0,0,0,0,0,0,0)
     text(b,abs_table[,"TOP.50"]+5+complement,abs_table[,"TOP.50"],cex=0.8,font=2,yaxt="n")
     par(new=T)
     b<-barplot(abs_table[,"TOP.10"],col="#DB3124",ylim=c(0,140),xaxt = "n", yaxt = "n",tcl=-0.2,cex.axis=1.3)
-    text(b,abs_table[,"TOP.10"]+5,abs_table[,"TOP.10"],cex=0.8,font=2,yaxt="n")
+    complement<-c(0,0,0,0,0,0,0,-1,0,0,0,0,0)
+    text(b,abs_table[,"TOP.10"]+5+complement,abs_table[,"TOP.10"],cex=0.8,font=2,yaxt="n")
     box()
     title(ylab="Number of Perturbed TRs",cex.lab=1.2,font.lab=1,line=1.7)
     legend("topright",legend=c("TOP 10","TOP 50","TOP 100"),col="black",pch=22,pt.bg=c("#DB3124","#FC8C5A","#FFDF34"),text.font=2)
@@ -238,26 +239,31 @@ for(k in 1:1){
     complement3<-c(0,0,0,0,0,0,0,-3,0,0,0,0,0)
     text(b,ratio_table[,"TOP.1%"]+10+complement3,ratio_table[,"TOP.1%"],cex=0.7,font=2,yaxt="n")
     box()
-    text(x=b,y=-70,labs,xpd=TRUE,cex=0.8,srt=90,font=2,col=col_abs)
+    text(x=b,y=-60,labs,xpd=TRUE,cex=0.8,srt=90,font=2,col=col_abs)
     title(ylab="Number of Perturbed TRs",cex.lab=1.2,font.lab=1,line=1.7)
     legend("topright",legend=c("TOP 1%","TOP 5%","TOP 10%"),col="black",pch=22,pt.bg=c("#1c3e71","#2c81be","#98c7df"),text.font=2)
   }
 }
 title(xlab="Computational method",font.lab=1,line=-0.5,outer=TRUE,cex.main=1.2,cex.lab=1.2)
+dev.off()
+
 
 ############################################################
 #Figure 6 bottomright
 ############################################################
 
 #Sort the order based on high to low
-MRR_table_200
-rank_table_200[c(1,8,3,9,13,11,5,7,6,4,12,2,10),]
-Method_names[c(1,8,3,9,13,11,5,7,6,4,12,2,10)]
-method_name<-Method_names[c(1,8,3,9,13,11,5,7,6,4,12,2,10)]
-Hit_rate_table_200<-Hit_rate_table_200[c(1,8,3,9,13,11,5,7,6,4,12,2,10),]
-MRR_table_200<-MRR_table_200[c(1,8,3,9,13,11,5,7,6,4,12,2,10),]
-MAP_table_200<-MAP_table_200[c(1,8,3,9,13,11,5,7,6,4,12,2,10),]
-NDCG_table_200<-NDCG_table_200[c(1,8,3,9,13,11,5,7,6,4,12,2,10),]
+Hit_rate_table_200
+
+col_MRR<-c("black","black","black","black","black","black","red","black",
+           "red","black","black","black","red")
+
+Method_names[c(1,8,3,9,13,5,11,7,6,4,12,2,10)]
+method_name<-Method_names[c(1,8,3,9,13,5,11,7,6,4,12,2,10)]
+Hit_rate_table_200<-Hit_rate_table_200[c(1,8,3,9,13,5,11,7,6,4,12,2,10),]
+MRR_table_200<-MRR_table_200[c(1,8,3,9,13,5,11,7,6,4,12,2,10),]
+MAP_table_200<-MAP_table_200[c(1,8,3,9,13,5,11,7,6,4,12,2,10),]
+NDCG_table_200<-NDCG_table_200[c(1,8,3,9,13,5,11,7,6,4,12,2,10),]
 
 labs=method_name
 layout_matrix<-matrix(c(1:4),4,1,byrow=FALSE)
@@ -275,7 +281,7 @@ complement<-c(0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.01,0.02,0.02,0.02,0.02,0.02)
 text(1:13,Hit_rate_table_200$Top50+complement-0.0013,round(Hit_rate_table_200$Top50,digits=3),cex=1.1,col="#DB3124",font=2)
 text(1:13,Hit_rate_table_200$Top50+complement,round(Hit_rate_table_200$Top50,digits=3),cex=1.1,col="#FC8C5A",font=2)
 lines(1:13,type="b",Hit_rate_table_200$Top100,col="#FFDF34",lwd=1.5)
-complement<-c(0.02,0.02,0.02,0.02,-0.02,0.02,-0.02,0.04,0.02,0.02,0.02,0.02,0.02)
+complement<-c(0.02,0.02,0.02,0.02,-0.02,-0.02,0.02,0.04,0.02,0.02,0.02,0.02,0.02)
 text(1:13,Hit_rate_table_200$Top100+complement-0.0013,round(Hit_rate_table_200$Top100,digits=3),cex=1.1,col="#DB3124",font=2)
 text(1:13,Hit_rate_table_200$Top100+complement,round(Hit_rate_table_200$Top100,digits=3),cex=1.1,col="#FFDF34",font=2)
 
@@ -487,6 +493,38 @@ for(k in 1:3){
   }
 }
 
+
+max_rank_table_200<-list()
+for(i in 1:length(method_name)){
+  for(j in 1:length(method_name)){
+    max_rank_table_200[[paste0(i,"_",j)]]=c(0)
+  }
+}
+
+MRR_min_rank_table_200_10<-data.frame(matrix(nrow=13,ncol=13))
+colnames(MRR_min_rank_table_200_10)<-method_name
+colnames(MRR_min_rank_table_200_10)<-method_name
+
+MRR_min_rank_table_200_50<-data.frame(matrix(nrow=13,ncol=13))
+colnames(MRR_min_rank_table_200_50)<-method_name
+colnames(MRR_min_rank_table_200_50)<-method_name
+
+MRR_min_rank_table_200_100<-data.frame(matrix(nrow=13,ncol=13))
+colnames(MRR_min_rank_table_200_100)<-method_name
+colnames(MRR_min_rank_table_200_100)<-method_name
+
+Jaccard_rank_table_200_10<-data.frame(matrix(nrow=13,ncol=13))
+colnames(Jaccard_rank_table_200_10)<-method_name
+colnames(Jaccard_rank_table_200_10)<-method_name
+
+Jaccard_rank_table_200_50<-data.frame(matrix(nrow=13,ncol=13))
+colnames(Jaccard_rank_table_200_50)<-method_name
+colnames(Jaccard_rank_table_200_50)<-method_name
+
+Jaccard_rank_table_200_100<-data.frame(matrix(nrow=13,ncol=13))
+colnames(Jaccard_rank_table_200_100)<-method_name
+colnames(Jaccard_rank_table_200_100)<-method_name
+
 combo_table_200_10<-data.frame(matrix(nrow=13,ncol=13))
 colnames(combo_table_200_10)<-method_name
 rownames(combo_table_200_10)<-method_name
@@ -511,7 +549,58 @@ combo_table_200_10p<-data.frame(matrix(nrow=13,ncol=13))
 colnames(combo_table_200_10p)<-method_name
 rownames(combo_table_200_10p)<-method_name
 
-par(mfrow=c(2,3))
+par(mfrow=c(4,3))
+
+Jac_cal<-function(li1,li2){
+  li1<-li1[!is.na(li1)]
+  li2<-li2[!is.na(li2)]
+  Jac_val<-length(intersect(li1,li2))/length(union(li1,li2))
+  if(is.na(Jac_val)){
+    return(0)
+  }else{
+    return(Jac_val)
+  }
+}
+
+
+
+for(k in 1:3){
+  work_files<-list.files(paste0(work_dir,knockTF_folder[k]))
+
+  method_name<-c("BART","ChEA3","ChIP-Atlas","Cscan","Enrichr","HOMER","i-cisTarget",
+                 "Lisa","MAGIC","Pscan","RcisTarget","RegulatorTrail","TFEA.ChIP")
+
+  for(i in 1:length(work_files)){
+    for(m in 1:length(work_files)){
+      print(i)
+      table_res1<-read.csv(paste0(work_dir,knockTF_folder[k],work_files[i]),header=TRUE)
+      table_res2<-read.csv(paste0(work_dir,knockTF_folder[k],work_files[m]),header=TRUE)
+      TF_index<-colnames(table_res1)[1:ncol(table_res1)]
+      TF_index3<-colnames(table_res2)[1:ncol(table_res2)]
+      TF_index<-intersect(TF_index,TF_index3)
+      TF_index2<-sapply(strsplit(TF_index,".",fixed=TRUE),function(x){return(x[[1]])})
+      TF_names<-sapply(strsplit(TF_index,"_",fixed=TRUE),function(x){return(x[[1]])})
+      rank_num<-c()
+      TF_in_list<-c()
+
+      for(j in 1:length(TF_index)){
+        TF_rank_list1<-table_res1[,TF_index[j]]
+        TF_rank_list2<-table_res2[,TF_index[j]]
+        if(k==1){
+          Jaccard_rank_table_200_10[i,m]<-Jac_cal(TF_rank_list1[1:10],TF_rank_list2[1:10])
+          Jaccard_rank_table_200_50[i,m]<-Jac_cal(TF_rank_list1[1:50],TF_rank_list2[1:50])
+          Jaccard_rank_table_200_100[i,m]<-Jac_cal(TF_rank_list1[1:100],TF_rank_list2[1:100])
+        }else if(k==2){
+        }else if(k==3){
+        }
+      }
+    }
+  }
+}
+
+
+
+
 for(i in 1:nrow(TF_rank_table_200)){
   for(k in 1:nrow(TF_rank_table_200)){
     rank_list=c()
@@ -520,55 +609,89 @@ for(i in 1:nrow(TF_rank_table_200)){
       rank_list=c(rank_list,min(TF_rank_table_200[i,j],TF_rank_table_200[k,j],na.rm=TRUE))
       ratio_list=c(ratio_list,min(TF_rank_table_ratio_200[i,j],TF_rank_table_ratio_200[k,j],na.rm=TRUE))
     }
-    combo_table_200_10[i,k]<-sum(rank_list<10,na.rm=TRUE)
-    combo_table_200_1p[i,k]<-sum(ratio_list<0.01,na.rm=TRUE)
+    rank_10_list<-rank_list
+    rank_10_list[rank_10_list>10]=NA
+    rank_50_list<-rank_list
+    rank_50_list[rank_50_list>50]=NA
+    rank_100_list<-rank_list
+    rank_100_list[rank_100_list>100]=NA
 
-    combo_table_200_50[i,k]<-sum(rank_list<50,na.rm=TRUE)
-    combo_table_200_5p[i,k]<-sum(ratio_list<0.05,na.rm=TRUE)
 
-    combo_table_200_100[i,k]<-sum(rank_list<100,na.rm=TRUE)
-    combo_table_200_10p[i,k]<-sum(ratio_list<0.1,na.rm=TRUE)
+    MRR_min_rank_table_200_10[i,k]<-sum(1/rank_10_list,na.rm=TRUE)/570
+    MRR_min_rank_table_200_50[i,k]<-sum(1/rank_50_list,na.rm=TRUE)/570
+    MRR_min_rank_table_200_100[i,k]<-sum(1/rank_100_list,na.rm=TRUE)/570
+
+    combo_table_200_10[i,k]<-sum(rank_list<=10,na.rm=TRUE)
+    combo_table_200_1p[i,k]<-sum(ratio_list<=0.01,na.rm=TRUE)
+
+    combo_table_200_50[i,k]<-sum(rank_list<=50,na.rm=TRUE)
+    combo_table_200_5p[i,k]<-sum(ratio_list<=0.05,na.rm=TRUE)
+
+    combo_table_200_100[i,k]<-sum(rank_list<=100,na.rm=TRUE)
+    combo_table_200_10p[i,k]<-sum(ratio_list<=0.1,na.rm=TRUE)
   }
 }
 
+Jac_cal<-function(li1,li2){
+  return(length(intersect(li1,li2))/length(union(li1,li2)))
+}
 
-create_mask<-function(mat){
+MRR_min_rank_table_200_10<-round(MRR_min_rank_table_200_10,3)
+MRR_min_rank_table_200_50<-round(MRR_min_rank_table_200_50,3)
+MRR_min_rank_table_200_100<-round(MRR_min_rank_table_200_100,3)
+
+Hit_rate_table_200_10<-round(combo_table_200_10/570,3)
+Hit_rate_table_200_50<-round(combo_table_200_50/570,3)
+Hit_rate_table_200_100<-round(combo_table_200_100/570,3)
+
+Jaccard_rank_table_200_10<-round(Jaccard_rank_table_200_10,3)
+Jaccard_rank_table_200_50<-round(Jaccard_rank_table_200_50,3)
+Jaccard_rank_table_200_100<-round(Jaccard_rank_table_200_100,3)
+
+create_mask<-function(mat,adj=0){
   n=ncol(mat)
   mask_upper <- matrix(NA, ncol = n, nrow = n)
-  for (i in 1:n) {
-    for (j in 1:n) {
-      if (j >= i) {
-        mask_upper[i, j] <- TRUE
-      } else {
-        mask_upper[i, j] <- NA
+  for (i in 1:(n)) {
+    for (j in 1:(n)) {
+      if(adj==0){
+        if (j >= i) {
+          mask_upper[i, j] <- TRUE
+        } else {
+          mask_upper[i, j] <- NA
+        }
+      }else{
+        if (j > i) {
+          mask_upper[i, j] <- TRUE
+        } else {
+          mask_upper[i, j] <- NA
+        }
       }
     }
   }
   return(mask_upper)
 }
 
-plot_heatmap<-function(table){
-  table_mat<-create_mask(as.matrix(table))
+plot_heatmap<-function(table,adj=0){
+  table_mat<-create_mask(as.matrix(table),adj)
   table_upper<-as.matrix(table)*table_mat
   return(table_upper)
 }
 
-draw_rect<-function(n,table){
+draw_rect<-function(n,table,cex_text=0.8){
   for(i in 1:n) {
     for(j in 1:n) {
       if (j >= i) {
         rect(i-0.5, j-0.5, i+0.5, j+0.5)
-        text(i,j,table[i,j],col="black",cex=0.8,font=2)
+        text(i,j,table[i,j],col="black",cex=cex_text,font=2)
       }
     }
   }
 }
 ###########
-
 collab<-c("black")
 
-layout_matrix=matrix(c(1,2,3,4,5,6),2,3,byrow=TRUE)
-layout(layout_matrix,heights=c(1.01,0.9),widths=c(1,0.92,0.92))
+layout_matrix=matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),5,3,byrow=TRUE)
+layout(layout_matrix,heights=c(1.01,0.9,0.9,0.9,0.9),widths=c(1,0.92,0.92))
 par(mar = c(1,3,4,1) + 0.1)
 h<-image(1:13,1:13,plot_heatmap(combo_table_200_10),ylab="",axes=FALSE,col=colorRampPalette(c("yellow","red"))(20))
 draw_rect(13,combo_table_200_10)
@@ -576,7 +699,6 @@ axis(3, at = seq(1, 13, by = 1), labels = method_name, las=2,cex.axis=0.7,tcl=-0
 axis(2, at = seq(1, 13, by = 1), labels = method_name, las = 1,cex.axis=0.7,tcl=-0.2,font.axis=2,col.axis=collab)
 mtext("Top 10", side=1, line=0,cex=0.7,font=2)
 segments(1,8,8,5,lwd=0.7)
-segments(1,13,8,5,lwd=0.7)
 text(8.5,5,"Max",font=2,cex=0.8)
 
 par(mar=c(1,1,4,1))
@@ -618,13 +740,88 @@ mtext("Top 10%", side=1, line=0,cex=0.7,font=2)
 segments(3,5,8,5,lwd=0.7)
 text(8.5,5,"Max",font=2,cex=0.8)
 legend("bottomright",legend=c("Low","High"),fill=c("lightblue","lightblue4"),title="Top %")
-title(main="Ranking by Combining Two Methods",outer=TRUE,line=1,font=2,font.lab=2,col.axis=collab)
 mtext("200 Input Genes",side=1,outer=TRUE,line=1,font=2,cex=0.8,col.axis=collab)
+
+
+par(mar=c(1,3,1,1))
+h<-image(1:13,1:13,plot_heatmap(Hit_rate_table_200_10),ylab="",axes=FALSE,col=colorRampPalette(c("#FAE2C5","#EB8E47"))(20))
+draw_rect(13,Hit_rate_table_200_10,0.7)
+axis(2, at = seq(1, 13, by = 1), labels = method_name, las = 1,cex.axis=0.7,tcl=-0.2,font.axis=2,col.axis=collab)
+mtext("K = 10", side=1, line=0,cex=0.7,font=2)
+segments(1,8,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(Hit_rate_table_200_50),axes=FALSE,col=colorRampPalette(c("#FAE2C5","#EB8E47"))(20))
+draw_rect(13,Hit_rate_table_200_50,0.7)
+mtext("K = 50", side=1, line=0,cex=0.7,font=2)
+segments(5,13,8.5,5.3,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(Hit_rate_table_200_100),axes=FALSE,col=colorRampPalette(c("#FAE2C5","#EB8E47"))(20))
+draw_rect(13,Hit_rate_table_200_100,0.7)
+mtext("K = 100", side=1, line=0,cex=0.7,font=2)
+segments(5,13,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+legend("bottomright",legend=c("Low","High"),fill=c("#FAE2C5","#EB8E47"),title="Hit Rate @ K")
+
+par(mar=c(1,3,1,1))
+h<-image(1:13,1:13,plot_heatmap(MRR_min_rank_table_200_10),ylab="",axes=FALSE,col=colorRampPalette(c("#EFE2ED","#A977A6"))(20))
+draw_rect(13,MRR_min_rank_table_200_10,0.7)
+axis(2, at = seq(1, 13, by = 1), labels = method_name, las = 1,cex.axis=0.7,tcl=-0.2,font.axis=2,col.axis=collab)
+mtext("K = 10", side=1, line=0,cex=0.7,font=2)
+segments(1,3,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(MRR_min_rank_table_200_50),axes=FALSE,col=colorRampPalette(c("#EFE2ED","#A977A6"))(20))
+draw_rect(13,MRR_min_rank_table_200_50,0.7)
+mtext("K = 50", side=1, line=0,cex=0.7,font=2)
+segments(1,3,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(MRR_min_rank_table_200_100),axes=FALSE,col=colorRampPalette(c("#EFE2ED","#A977A6"))(20))
+draw_rect(13,MRR_min_rank_table_200_100,0.7)
+mtext("K = 100", side=1, line=0,cex=0.7,font=2)
+segments(1,3,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+legend("bottomright",legend=c("Low","High"),fill=c("#EFE2ED","#A977A6"),title="MRR @ K")
+
+par(mar=c(1,3,1,1))
+h<-image(1:13,1:13,plot_heatmap(Jaccard_rank_table_200_10,-1),ylab="",axes=FALSE,col=colorRampPalette(c("#D3EEE2","#2AA371"))(20))
+draw_rect(13,Jaccard_rank_table_200_10,0.7)
+axis(2, at = seq(1, 13, by = 1), labels = method_name, las = 1,cex.axis=0.7,tcl=-0.2,font.axis=2,col.axis=collab)
+mtext("K = 10", side=1, line=0,cex=0.7,font=2)
+segments(7,9,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(Jaccard_rank_table_200_50,-1),axes=FALSE,col=colorRampPalette(c("#D3EEE2","#2AA371"))(20))
+draw_rect(13,Jaccard_rank_table_200_50,0.7)
+mtext("K = 50", side=1, line=0,cex=0.7,font=2)
+segments(2,9,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+
+par(mar=c(1,1,1,1))
+h<-image(1:13,1:13,plot_heatmap(Jaccard_rank_table_200_100,-1),axes=FALSE,col=colorRampPalette(c("#D3EEE2","#2AA371"))(20))
+draw_rect(13,Jaccard_rank_table_200_100,0.7)
+mtext("K = 100", side=1, line=0,cex=0.7,font=2)
+segments(2,9,8,5,lwd=0.7)
+text(8.5,5,"Max",font=2,cex=0.8)
+legend("bottomright",legend=c("Low","High"),fill=c("#D3EEE2","#2AA371"),title="Jaccard @ K")
+title(main="Performance Evaluation by Combining Two Methods",outer=TRUE,line=1,font=2,font.lab=2,col.axis=collab)
+mtext("200 Input Genes",side=1,outer=TRUE,line=1,font=2,cex=0.8,col.axis=collab)
+
+
+
+
+
 
 ############################################################
 #Figure 8
 ############################################################
-
 work_dir<-"/Users/zeyulu/Dropbox/datasets/clean_results_new/"
 knockTF_folder<-c("knockTF_200/","knockTF_600/","knockTF_1000/")
 genes<-c(200,600,1000)
@@ -640,10 +837,6 @@ na_table<-data.frame(matrix(nrow=13,ncol=3))
 colnames(na_table)<-c("top200","top600","top1000")
 rownames(na_table)<-method_name
 
-MRR_table<-data.frame(matrix(nrow=13,ncol=3))
-colnames(MRR_table)<-c("200","600","1000")
-rownames(MRR_table)<-method_name
-
 ratio_table<-data.frame(matrix(nrow=13,ncol=3))
 colnames(ratio_table)<-c("200","600","1000")
 rownames(ratio_table)<-method_name
@@ -652,7 +845,7 @@ abs_table<-data.frame(matrix(nrow=13,ncol=3))
 colnames(abs_table)<-c("200","600","1000")
 rownames(abs_table)<-method_name
 
-TF_table<-read.csv("/Users/zeyulu/Dropbox/datasets/clean_results_new/TF.csv")
+TF_table<-read.csv("/Users/zeyulu/Dropbox/datasets/clean_results_new copy/TF.csv")
 TF_names_all<-TF_table$HGNC.symbol
 
 top10_rank_list_200<-list()
@@ -696,18 +889,15 @@ for(k in 1:3){
     top100_rank_list[[method_name[i]]]<-table(top_100_list)
 
     mappable_table[method_name[i],k]<-max(TF_in_list,rm.na=TRUE)
-    top1p<-sum(ratio_list<0.01,na.rm=TRUE)
-    top5p<-sum(ratio_list<0.05,na.rm=TRUE)
-    top10p<-sum(ratio_list<0.1,na.rm=TRUE)
+    top1p<-sum(ratio_list<=0.01,na.rm=TRUE)
+    top5p<-sum(ratio_list<=0.05,na.rm=TRUE)
+    top10p<-sum(ratio_list<=0.1,na.rm=TRUE)
 
 
 
-    top10<-sum(rank_list<10,na.rm=TRUE)
-    top50<-sum(rank_list<50,na.rm=TRUE)
-    top100<-sum(rank_list<100,na.rm=TRUE)
-
-    MRR_val<-MRR_cal(rank_list)
-    MRR_table[method_name[i],k]<-MRR_val
+    top10<-sum(rank_list<=10,na.rm=TRUE)
+    top50<-sum(rank_list<=50,na.rm=TRUE)
+    top100<-sum(rank_list<=100,na.rm=TRUE)
 
     na_val<-sum(is.na(rank_list))
 
@@ -758,8 +948,8 @@ plot(top10~years,data=coverage_table,main="Top 10 TRs (200 input genes)",
      font.lab=2,cex=0.8,pch=21,xaxt="n",col="black",bg=c("blue","blue","blue","blue","blue","red",
                                                          "blue","blue","blue","red","red","blue","blue"))
 addTextLabels(coverage_table$years,coverage_table$top10,method_name,cex.label=1,col.label="black",lwd=0.75)
-arrows(x0=2013,y0=18,x1=2016,y1=22,col="black",length=0.05,lwd=1.5)
-text(2014.2,21.1,"Increase",srt=25,cex=0.8)
+arrows(x0=2014,y0=20,x1=2017,y1=24,col="black",length=0.05,lwd=1.5)
+text(2015.2,23.1,"Increase",srt=25,cex=0.8)
 text(2009,36.7,"A",font=2)
 
 plot(top1p~years,data=coverage_table,main="Top 1% TRs (200 input genes)",
@@ -768,7 +958,7 @@ plot(top1p~years,data=coverage_table,main="Top 1% TRs (200 input genes)",
 addTextLabels(coverage_table$years,coverage_table$top1p,method_name,cex.label=1,col.label="black",lwd=0.75)
 arrows(x0=2012,y0=35,x1=2015,y1=55,col="black",length=0.05,lwd=1.5)
 text(2013,48,"Increase",srt=36,cex=0.8)
-text(2009,108,"B",font=2)
+text(2009,114,"B",font=2)
 plot(nas~years,data=coverage_table,main="Perturbed TRs Not Found",
      font.lab=2,cex=0.8,pch=21,col="black",bg=c("blue","blue","blue","blue","blue","red",
                                                 "blue","blue","blue","red","red","blue","blue"))
@@ -784,7 +974,7 @@ plot(avail~years,data=coverage_table,main="Number of Unique TRs",
 addTextLabels(coverage_table$years,coverage_table$avail,method_name,cex.label=1,col.label="black",lwd=0.75)
 arrows(x0=2012,y0=400,x1=2015,y1=700,col="black",length=0.05,lwd=1.5)
 text(2013.2,630,"Increase",srt=34,cex=0.8)
-text(2009,1800,"D",font=2)
+text(2009,1650,"D",font=2)
 
 coverage_table
 
@@ -795,6 +985,8 @@ title(ylab="Number of TRs",outer=TRUE, font.lab=2,line=0.6,cex.main=1.4,cex.lab=
 ############################################################
 #Figure 9
 ############################################################
+library(ggplot2)
+
 MRR_diff_table_top10<-data.frame(matrix(nrow=13,ncol=3))
 MRR_diff_table_top50<-data.frame(matrix(nrow=13,ncol=3))
 MRR_diff_table_top100<-data.frame(matrix(nrow=13,ncol=3))
@@ -915,16 +1107,7 @@ combined_long$rowName <- factor(combined_long$rowName, levels = c(Hit_rate_table
 
 Hit_rate_diff_table_top10
 
-color_name<-c("Lisa"=rgb(102/255,0/255,32/255),
-              "BART"=rgb(177/255,24/255,45/255),
-              "ChIP-Atlas"=rgb(212/255,97/255,83/255),
-              "HOMER"=rgb(36/255,100/255,171/255),
-              "Pscan"=rgb(71/255,146/255,196/255),
-              "ChEA3"=rgb(251/255,132/255,002/255),
-              "Enrichr"=rgb(30/255,124/255,74/255),
-              "RcisTarget"=rgb(111/255,109/255,161/255),
-              "Cscan"=rgb(236/255,187/255,107/255),
-              "MAGIC"=rgb(114/255,138/255))
+strip <- strip_themed(background_x = elem_list_rect(fill = c("#DB3124","#FC8C5A","#FFDF34","#DB3124","#FC8C5A","#FFDF34","#DB3124","#FC8C5A","#FFDF34","#DB3124","#FC8C5A","#FFDF34")))
 
 color_more<-c("Lisa"="#FF0000",
               "Cscan"="#00FF00",
@@ -941,6 +1124,13 @@ color_more<-c("Lisa"="#FF0000",
 
 
 library(ggh4x)
+
+combined_long[combined_long$rowName=="HOMER",]
+
+Hit_rate_table_600
+Hit_rate_table_200
+
+
 
 gg <- ggplot(combined_long, aes(x = Column, y = Value, group = rowName, color = as.factor(rowName))) +
   geom_line() +
